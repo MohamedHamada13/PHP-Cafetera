@@ -1,3 +1,31 @@
+<?php
+require_once __DIR__ . "/../../config/Database.php";
+require_once __DIR__ . "/../../models/User.php";
+require_once __DIR__ . "/../../models/Room.php";
+
+session_start();
+
+// Check admin access
+require_once __DIR__ . "/auth_check.php";
+
+// Initialize database connection
+$database = new Database();
+$db = $database->connect();
+
+// Fetch all users
+$userModel = new User($db);
+$users = $userModel->getAll();
+
+// Fetch all rooms for reference
+$roomModel = new Room($db);
+$rooms = $roomModel->getAll();
+
+// Create a room lookup array (id => name)
+$roomLookup = [];
+foreach ($rooms as $room) {
+    $roomLookup[$room["id"]] = $room["name"];
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,8 +33,7 @@
     <meta charset="UTF-8">
     <title>Users Management</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <?php include __DIR__ . "/../layouts/jsCDN.php"; ?>
     <style>
         body {
             background: #f4f6f9;
@@ -38,6 +65,7 @@
 
 <body>
 
+    <?php include __DIR__ . "/../layouts/navbar.php"; ?>
     <div class="container py-5">
 
         <div class="card">
@@ -48,7 +76,7 @@
                     Users Management
                 </h4>
 
-                <a href="/users/create" class="btn btn-primary">
+                <a href="/admin/add-user" class="btn btn-primary">
                     + Add User
                 </a>
 
@@ -80,25 +108,33 @@
 
                                     <tr>
 
-                                        <td><?= $user['id'] ?></td>
+                                        <td><?= $user["id"] ?></td>
 
                                         <td>
 
                                             <div class="d-flex align-items-center gap-2">
 
-                                                <?php if (!empty($user['thumbnail'])): ?>
+                                                <?php if (
+                                                    !empty($user["image"])
+                                                ): ?>
 
-                                                    <img src="/uploads/<?= $user['thumbnail'] ?>" class="user-img">
+                                                    <img src="/uploads/<?= $user[
+                                                        "image"
+                                                    ] ?>" class="user-img">
 
                                                 <?php else: ?>
 
-                                                    <img src="https://ui-avatars.com/api/?name=<?= $user['name'] ?>"
+                                                    <img src="https://ui-avatars.com/api/?name=<?= $user[
+                                                        "name"
+                                                    ] ?>"
                                                         class="user-img">
 
                                                 <?php endif; ?>
 
                                                 <span class="fw-semibold">
-                                                    <?= htmlspecialchars($user['name']) ?>
+                                                    <?= htmlspecialchars(
+                                                        $user["name"],
+                                                    ) ?>
                                                 </span>
 
                                             </div>
@@ -106,18 +142,30 @@
                                         </td>
 
                                         <td>
-                                            <?= htmlspecialchars($user['email']) ?>
+                                            <?= htmlspecialchars(
+                                                $user["email"],
+                                            ) ?>
                                         </td>
 
                                         <td>
                                             <span class="badge bg-secondary">
-                                                Room <?= $user['room_id'] ?>
+                                                Room <?= isset(
+                                                    $roomLookup[
+                                                        $user["room_id"]
+                                                    ],
+                                                )
+                                                    ? $roomLookup[
+                                                        $user["room_id"]
+                                                    ]
+                                                    : $user["room_id"] ?>
                                             </span>
                                         </td>
 
                                         <td>
 
-                                            <?php if ($user['role'] == 'admin'): ?>
+                                            <?php if (
+                                                $user["role"] == "admin"
+                                            ): ?>
 
                                                 <span class="badge bg-danger">
                                                     Admin
@@ -134,12 +182,17 @@
                                         </td>
 
                                         <td>
-                                            <?= date('d M Y', strtotime($user['created_at'])) ?>
+                                            <?= date(
+                                                "d M Y",
+                                                strtotime($user["created_at"]),
+                                            ) ?>
                                         </td>
 
                                         <td class="text-center">
 
-                                            <form action="/users/<?= $user['id'] ?>/delete" method="POST"
+                                            <form action="/users/<?= $user[
+                                                "id"
+                                            ] ?>/delete" method="POST"
                                                 style="display:inline">
 
                                                 <button class="btn btn-sm btn-outline-danger">
@@ -168,7 +221,7 @@
                             No users found
                         </h5>
 
-                        <a href="/users/create" class="btn btn-primary mt-3">
+                        <a href="/admin/add-user" class="btn btn-primary mt-3">
                             Create First User
                         </a>
 
@@ -181,7 +234,6 @@
         </div>
 
     </div>
-
 </body>
 
 </html>

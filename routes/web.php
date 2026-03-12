@@ -1,35 +1,25 @@
 <?php
 
-$request = $_SERVER['REQUEST_URI'];
-$method = $_SERVER['REQUEST_METHOD'];
+// Get request URI
+$uri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-// Remove query string from URI
-$request = parse_url($request, PHP_URL_PATH);
+// Simple page routing
+$pages = [
+    "/" => __DIR__ . "/../app/views/user/home.php",
+    "/login" => __DIR__ . "/../app/views/auth/login.php",
+    "/logout" => __DIR__ . "/../app/views/auth/logout.php",
+    "/admin/users" => __DIR__ . "/../app/views/admin/users.php",
+    "/admin/add-user" => __DIR__ . "/../app/views/admin/add_user.php",
+];
 
-// Database connection
-require_once __DIR__ . '/../app/config/Database.php';
-$database = new Database();
-$db = $database->connect();
+// Check if page exists
+if (isset($pages[$uri])) {
+    require_once $pages[$uri];
+    exit();
+}
 
-// Controllers
-require_once __DIR__ . '/../app/controllers/UserController.php';
-
-/// Route definitions
-// Users routes
-if (preg_match('/\/users$/', $request) && $method === 'GET') {
-    $controller = new UserController($db);
-    $controller->index();
-}
-elseif (preg_match('/\/users\/create$/', $request) && $method === 'GET') {
-    $controller = new UserController($db);
-    $controller->create(); // Redirect to create form
-}
-elseif (preg_match('/\/users\/(\d+)\/delete$/', $request, $matches) && $method === 'POST') {
-    $id = $matches[1];
-    $controller = new UserController($db);
-    $controller->delete($id);
-    header('Location: /users');
-}
-else {
-    require_once __DIR__ . '/../app/views/user/home.php';
-}
+// 404 Not Found
+http_response_code(404);
+echo "<h1>404 - Page Not Found</h1>";
+echo "<p>Requested: " . htmlspecialchars($uri) . "</p>";
+echo '<p><a href="/">Go Home</a></p>';
