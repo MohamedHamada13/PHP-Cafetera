@@ -52,21 +52,29 @@ switch ($uri) {
     case "/cart/add":
         $controller = new OrderController($db);
         $controller->add((int)$_GET['id']);
+        header("Location: /");
+        exit();
         break;
 
     case "/cart/plus":
         $controller = new OrderController($db);
         $controller->increase((int)$_GET['id']);
+        header("Location: /");
+        exit();
         break;
 
     case "/cart/minus":
         $controller = new OrderController($db);
         $controller->decrease((int)$_GET['id']);
+        header("Location: /");
+        exit();
         break;
 
     case "/order/confirm":
         $controller = new OrderController($db);
-        $controller->confirm($_POST['room_id'], $_POST['notes']);
+        $controller->confirm($_POST['room_id'] ?? null, $_POST['notes'] ?? '');
+        header("Location: /");
+        exit();
         break;
 
     case "/order/latest":

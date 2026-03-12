@@ -61,7 +61,7 @@
                     <?php foreach ($products as $product): ?>
                         <div class="col-md-4">
                             <div class="card h-100">
-                                <a href="?action=add&id=<?= (int) $product['id'] ?>" class="text-decoration-none">
+                                <a href="/cart/add?id=<?= (int) $product['id'] ?>" class="text-decoration-none">
                                     <?php if (!empty($product['image'])): ?>
                                         <img src="assets/images/<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="<?= htmlspecialchars($product['name']) ?>">
                                     <?php else: ?>
@@ -101,9 +101,9 @@
                                             </div>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <a href="?action=minus&id=<?= (int) $product['id'] ?>" class="btn btn-sm btn-outline-secondary me-1">-</a>
-                                            <span class="mx-1"><?= (int) $item['quantity'] ?></span>
-                                            <a href="?action=plus&id=<?= (int) $product['id'] ?>" class="btn btn-sm btn-outline-secondary ms-1">+</a>
+                                             <a href="/cart/minus?id=<?= (int) $product['id'] ?>" class="btn btn-sm btn-outline-secondary me-1">-</a>
+                                             <span class="mx-1"><?= (int) $item['quantity'] ?></span>
+                                             <a href="/cart/plus?id=<?= (int) $product['id'] ?>" class="btn btn-sm btn-outline-secondary ms-1">+</a>
                                         </div>
                                         <div class="ms-3 text-end">
                                             <small class="text-muted">Total</small>
@@ -127,7 +127,7 @@
                         Order Details
                     </div>
                     <div class="card-body">
-                        <form method="post" action="index.php">
+                         <form method="post" action="/order/confirm">
                             <div class="mb-3">
                                 <label for="room_id" class="form-label">Room</label>
                                 <select name="room_id" id="room_id" class="form-select" required>
