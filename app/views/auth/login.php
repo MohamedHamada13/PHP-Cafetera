@@ -45,50 +45,61 @@ $success = $_GET["success"] ?? null;
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cafeteria Login</title>
-<?php include __DIR__ . "/../layouts/jsCDN.php"; ?>
+<link rel="stylesheet" href="/assets/css/login.css">
 </head>
-<body>
+<?php include __DIR__ . "/../layouts/jsCDN.php"; ?>
+<body class="login-page">
 
-<div class="container mt-5" style="max-width: 500px;">
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
 
-    <h1 class="text-center mb-4">Cafeteria</h1>
+    <div class="login-box">
 
-    <?php if ($error) { ?>
-    <div class="alert alert-danger text-center"><?php echo htmlspecialchars(
-        $error,
-    ); ?></div>
-    <?php } ?>
+        <h1 class="fw-bold mb-1">Login</h1>
+        <p class="text-muted mb-4">Hi, Welcome back 👋</p>
 
-    <?php if ($success) { ?>
-    <div class="alert alert-success text-center"><?php echo htmlspecialchars(
-        $success,
-    ); ?></div>
-    <?php } ?>
+        <?php if ($error) { ?>
+            <div class="alert alert-danger text-center">
+                <?php echo htmlspecialchars($error); ?>
+            </div>
+        <?php } ?>
 
-    <form action="" method="post">
+        <form method="post">
 
-        <!-- Email -->
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input
-                type="email"
-                class="form-control"
-                name="email"
-                required>
-        </div>
+            <!-- Email -->
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    class="form-control custom-input"
+                    placeholder="E.g. johndoe@email.com"
+                    required>
+            </div>
 
-        <!-- Password -->
-        <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-control" name="password" required>
-        </div>
+            <!-- Password -->
+            <div class="mb-2">
+                <label class="form-label">Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    class="form-control custom-input"
+                    placeholder="Enter your password"
+                    required>
+            </div>
 
-        <!-- Login Button -->
-        <div class="mb-3 d-flex justify-content-between align-items-center">
-            <button type="submit" class="btn btn-primary">Login</button>
-        </div>
+            <!-- Remember + Forgot -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <a href="/forgot-password" class="forgot-link">Forgot Password?</a>
+            </div>
 
-    </form>
+            <!-- Login Button -->
+            <button class="btn login-btn w-100">
+                Login
+            </button>
+
+        </form>
+    </div>
 </div>
+
 </body>
 </html>

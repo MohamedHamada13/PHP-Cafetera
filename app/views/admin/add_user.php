@@ -30,6 +30,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
+    // Check for duplicate email
+    $userModel = new User($db);
+    if ($userModel->getByEmail($email)) {
+        header("Location: /admin/add-user?error=Email already exists");
+        exit();
+    }
+
     if (strlen($password) < 8) {
         header(
             "Location: /admin/add-user?error=Password must be at least 8 characters",
