@@ -12,6 +12,11 @@ $db = $database->connect();
 
 $uri = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
+if (in_array($uri, ["/", "/home"], true) && !isset($_SESSION["user_id"])) {
+    header("Location: /login?error=Please login first");
+    exit();
+}
+
 switch ($uri) {
 
     case "/":
@@ -55,6 +60,42 @@ switch ($uri) {
         $controller->create();
         break;
 
+    case "/admin/products":
+        require_once __DIR__ . "/../app/views/admin/products.php";
+        break;
+
+    case "/admin/add-product":
+        require_once __DIR__ . "/../app/views/admin/add_product.php";
+        break;
+
+    case "/admin/edit-product":
+        require_once __DIR__ . "/../app/views/admin/edit_product.php";
+        break;
+
+    case "/admin/products/create":
+        require_once __DIR__ . "/../app/controllers/ProductController.php";
+        $controller = new ProductController();
+        $controller->createProduct();
+        break;
+
+    case "/admin/products/update":
+        require_once __DIR__ . "/../app/controllers/ProductController.php";
+        $controller = new ProductController();
+        $controller->updateProduct();
+        break;
+
+    case "/admin/products/delete":
+        require_once __DIR__ . "/../app/controllers/ProductController.php";
+        $controller = new ProductController();
+        $controller->deleteProduct();
+        break;
+
+    case "/admin/categories/create":
+        require_once __DIR__ . "/../app/controllers/CategoryController.php";
+        $controller = new CategoryController();
+        $controller->createCategory();
+        break;
+    
     case "/home":
         $controller = new HomeController();
         $controller->index();
