@@ -30,11 +30,7 @@ class AuthController {
             $_SESSION["user_name"] = $user["name"];
             $_SESSION["user_role"] = $user["role"];
 
-            if ($user["role"] === "admin") {
-                header("Location: /admin/users");
-            } else {
-                header("Location: /");
-            }
+            header("Location: /");
             exit();
         }
 

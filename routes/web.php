@@ -122,7 +122,11 @@ switch ($uri) {
         }
         $controller = new OrderController($db);
         $controller->add((int)$_GET['id']);
-        header("Location: /");
+        $redirectTo = '/';
+        if (($_SESSION['user_role'] ?? '') === 'admin' && !empty($_GET['order_user_id'])) {
+            $redirectTo .= '?order_user_id=' . (int)$_GET['order_user_id'];
+        }
+        header("Location: {$redirectTo}");
         exit();
         break;
 
@@ -133,7 +137,11 @@ switch ($uri) {
         }
         $controller = new OrderController($db);
         $controller->increase((int)$_GET['id']);
-        header("Location: /");
+        $redirectTo = '/';
+        if (($_SESSION['user_role'] ?? '') === 'admin' && !empty($_GET['order_user_id'])) {
+            $redirectTo .= '?order_user_id=' . (int)$_GET['order_user_id'];
+        }
+        header("Location: {$redirectTo}");
         exit();
         break;
 
@@ -144,7 +152,11 @@ switch ($uri) {
         }
         $controller = new OrderController($db);
         $controller->decrease((int)$_GET['id']);
-        header("Location: /");
+        $redirectTo = '/';
+        if (($_SESSION['user_role'] ?? '') === 'admin' && !empty($_GET['order_user_id'])) {
+            $redirectTo .= '?order_user_id=' . (int)$_GET['order_user_id'];
+        }
+        header("Location: {$redirectTo}");
         exit();
         break;
 
@@ -154,7 +166,11 @@ switch ($uri) {
             exit();
         }
         $controller = new OrderController($db);
-        $controller->confirm($_POST['room_id'] ?? null, $_POST['notes'] ?? '');
+        $controller->confirmFor(
+            $_POST['room_id'] ?? null,
+            $_POST['notes'] ?? '',
+            $_POST['order_user_id'] ?? null
+        );
         header("Location: /?success=Order placed successfully!");
         exit();
         break;

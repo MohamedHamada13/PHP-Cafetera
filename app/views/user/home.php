@@ -9,14 +9,52 @@
 </head>
 
 <body>
+    <?php
+        $isAdmin = (($_SESSION['user_role'] ?? '') === 'admin');
+        $targetUserId = (int)($selectedOrderUserId ?? 0);
+        $selectedUser = null;
+        $selectedUserRoomId = null;
+
+        if ($isAdmin && !empty($availableUsers)) {
+            foreach ($availableUsers as $candidateUser) {
+                if ((int)$candidateUser['id'] === $targetUserId) {
+                    $selectedUser = $candidateUser;
+                    break;
+                }
+            }
+        } elseif (!$isAdmin && !empty($currentUser)) {
+            $selectedUser = $currentUser;
+        }
+
+        if (!empty($selectedUser['room_id'])) {
+            $selectedUserRoomId = (int)$selectedUser['room_id'];
+        }
+
+        $orderUserQuery = ($isAdmin && $targetUserId > 0)
+            ? ('&order_user_id=' . $targetUserId)
+            : '';
+    ?>
     <?php include __DIR__ . "/../layouts/navbar.php"; ?>
     <div class="container py-4">
+        <div class="mb-4">
+            <?php if ($isAdmin): ?>
+                <h2 class="mb-1">Cashier Order Panel</h2>
+                <p class="text-muted mb-0">Create orders on behalf of cafeteria users.</p>
+            <?php else: ?>
+                <h2 class="mb-1">Welcome, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></h2>
+                <p class="text-muted mb-0">Build your order and confirm it for your room.</p>
+            <?php endif; ?>
+        </div>
+
         <?php if (!empty($latestOrder)): ?>
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card border-success">
                         <div class="card-header bg-success text-white">
                             Latest Order
+                            <?php if ($isAdmin && !empty($selectedUser)): ?>
+                                for <?= htmlspecialchars($selectedUser['name']) ?>
+                            <?php endif; ?>
                         </div>
                         <div class="card-body">
                             <?php $order = $latestOrder['order']; ?>
@@ -60,7 +98,7 @@
                     <?php foreach ($products as $product): ?>
                         <div class="col-md-4">
                             <div class="card h-100">
-                                <a href="/cart/add?id=<?= (int) $product['id'] ?>" class="text-decoration-none">
+                                <a href="/cart/add?id=<?= (int) $product['id'] ?><?= htmlspecialchars($orderUserQuery) ?>" class="text-decoration-none">
                                     <?php if (!empty($product['image'])): ?>
                                         <?php
                                             $imageFile = (string) $product['image'];
@@ -122,9 +160,9 @@
                                             </div>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                             <a href="/cart/minus?id=<?= (int) $product['id'] ?>" class="btn btn-sm btn-outline-secondary me-1">-</a>
+                                            <a href="/cart/minus?id=<?= (int) $product['id'] ?><?= htmlspecialchars($orderUserQuery) ?>" class="btn btn-sm btn-outline-secondary me-1">-</a>
                                              <span class="mx-1"><?= (int) $item['quantity'] ?></span>
-                                             <a href="/cart/plus?id=<?= (int) $product['id'] ?>" class="btn btn-sm btn-outline-secondary ms-1">+</a>
+                                            <a href="/cart/plus?id=<?= (int) $product['id'] ?><?= htmlspecialchars($orderUserQuery) ?>" class="btn btn-sm btn-outline-secondary ms-1">+</a>
                                         </div>
                                         <div class="ms-3 text-end">
                                             <small class="text-muted">Total</small>
@@ -149,17 +187,63 @@
                     </div>
                     <div class="card-body">
                          <form method="post" action="/order/confirm">
-                            <div class="mb-3">
-                                <label for="room_id" class="form-label">Room</label>
-                                <select name="room_id" id="room_id" class="form-select" required>
-                                    <option value="">Select a room</option>
-                                    <?php foreach ($rooms as $room): ?>
-                                        <option value="<?= (int) $room['id'] ?>">
-                                            <?= htmlspecialchars($room['name'] ?? $room['room_name'] ?? ('Room #' . $room['id'])) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <?php if ($isAdmin): ?>
+                                <div class="mb-3">
+                                    <label for="order_user_id" class="form-label">Order For User</label>
+                                    <select
+                                        name="order_user_id"
+                                        id="order_user_id"
+                                        class="form-select"
+                                        onchange="window.location.href='/?order_user_id=' + this.value"
+                                        required>
+                                        <option value="">Select a user</option>
+                                        <?php foreach ($availableUsers as $availableUser): ?>
+                                            <option value="<?= (int)$availableUser['id'] ?>" <?= ((int)$availableUser['id'] === $targetUserId) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($availableUser['name']) ?> (<?= htmlspecialchars($availableUser['email']) ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="room_id" class="form-label">Room</label>
+                                    <select name="room_id" id="room_id" class="form-select" required>
+                                        <option value="">Select a room</option>
+                                        <?php foreach ($rooms as $room): ?>
+                                            <?php $roomId = (int)$room['id']; ?>
+                                            <option value="<?= $roomId ?>" <?= ($selectedUserRoomId === $roomId) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($room['name'] ?? $room['room_name'] ?? ('Room #' . $roomId)) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php else: ?>
+                                <?php if (!empty($currentUser['room_id'])): ?>
+                                    <input type="hidden" name="room_id" value="<?= (int)$currentUser['room_id'] ?>">
+                                <?php endif; ?>
+                                <div class="mb-3">
+                                    <label class="form-label">Order For</label>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($currentUser['name'] ?? ($_SESSION['user_name'] ?? 'Current user')) ?>" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Room</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        value="<?php
+                                            $roomLabel = 'Not assigned';
+                                            if (!empty($rooms) && !empty($currentUser['room_id'])) {
+                                                foreach ($rooms as $room) {
+                                                    if ((int)$room['id'] === (int)$currentUser['room_id']) {
+                                                        $roomLabel = $room['name'] ?? $room['room_name'] ?? ('Room #' . $room['id']);
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            echo htmlspecialchars($roomLabel);
+                                        ?>"
+                                        readonly>
+                                </div>
+                            <?php endif; ?>
                             <div class="mb-3">
                                 <label for="notes" class="form-label">Notes</label>
                                 <textarea name="notes" id="notes" rows="3" class="form-control" placeholder="Any special instructions?"></textarea>

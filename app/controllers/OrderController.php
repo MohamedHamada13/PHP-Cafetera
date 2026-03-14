@@ -1,5 +1,8 @@
 <?php
 
+require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../models/User.php';
+
 class OrderController
 {
     private PDO $conn;
@@ -42,8 +45,73 @@ class OrderController
             return null;
         }
 
-        $userId = $_SESSION['user_id'] ?? null;
-        if (!$userId) {
+        $orderOwner = $this->resolveOrderOwner(null, $roomId);
+        if ($orderOwner === null) {
+            return null;
+        }
+
+        return $this->persistOrder($orderOwner['user_id'], $orderOwner['room_id'], $notes);
+    }
+
+    public function confirmFor(?int $roomId, string $notes, ?int $requestedUserId)
+    {
+        if (empty($_SESSION['cart'])) {
+            return null;
+        }
+
+        $orderOwner = $this->resolveOrderOwner($requestedUserId, $roomId);
+        if ($orderOwner === null) {
+            return null;
+        }
+
+        return $this->persistOrder($orderOwner['user_id'], $orderOwner['room_id'], $notes);
+    }
+
+    private function resolveOrderOwner(?int $requestedUserId, ?int $requestedRoomId): ?array
+    {
+        $sessionUserId = (int)($_SESSION['user_id'] ?? 0);
+        if ($sessionUserId <= 0) {
+            return null;
+        }
+
+        $sessionRole = $_SESSION['user_role'] ?? 'user';
+        $userModel = new User($this->conn);
+
+        if ($sessionRole === 'admin') {
+            $targetUserId = (int)($requestedUserId ?? 0);
+            if ($targetUserId <= 0) {
+                return null;
+            }
+
+            $targetUser = $userModel->getById($targetUserId);
+            if (!$targetUser || ($targetUser['role'] ?? '') !== 'user') {
+                return null;
+            }
+
+            $targetRoomId = !empty($requestedRoomId)
+                ? (int)$requestedRoomId
+                : (int)($targetUser['room_id'] ?? 0);
+
+            return [
+                'user_id' => (int)$targetUser['id'],
+                'room_id' => $targetRoomId > 0 ? $targetRoomId : null,
+            ];
+        }
+
+        $currentUser = $userModel->getById($sessionUserId);
+        if (!$currentUser) {
+            return null;
+        }
+
+        return [
+            'user_id' => (int)$currentUser['id'],
+            'room_id' => !empty($currentUser['room_id']) ? (int)$currentUser['room_id'] : null,
+        ];
+    }
+
+    private function persistOrder(int $userId, ?int $roomId, string $notes)
+    {
+        if ($userId <= 0) {
             return null;
         }
 
@@ -104,9 +172,9 @@ class OrderController
         }
     }
 
-    public function getLatestOrder()
+    public function getLatestOrder(?int $forUserId = null)
     {
-        $userId = $_SESSION['user_id'] ?? null;
+        $userId = $forUserId ?? ($_SESSION['user_id'] ?? null);
         if (!$userId) {
             return null;
         }
