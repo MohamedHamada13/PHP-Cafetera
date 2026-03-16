@@ -209,6 +209,26 @@ $statusLabels = [
 			border-color: #4E342E;
 			text-decoration: none;
 	}
+	/* styling form orders */
+	.form-orders-container{
+		width:450px !important;
+	}
+	.form-orders select {
+		width: 150px !important;
+	}
+	table  button {
+		width: 100px !important;
+	}
+	.badge {
+		width: 120px !important;
+	}
+	table {
+		overflow-x: auto !important;
+	}
+	table .date p{ 
+		margin: 0 !important;
+		width:200px !important;
+	}
 	</style>
 </head>
 
@@ -265,19 +285,19 @@ $statusLabels = [
 					<div class="alert alert-info mb-0">No orders found for the selected range.</div>
 				<?php else: ?>
 					<div class="table-responsive">
-						<table class="table table-hover align-middle mb-0">
+						<table class="table table-hover align-middle mb-">
 							<thead class="table-light">
 								<tr>
 									<th>Order</th>
 									<th>User</th>
 									<th>Room</th>
 									<th>Total</th>
-									<th>Status</th>
 									<th>Date</th>
+									<th>Status</th>
 									<th>Details</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody >
 								<?php foreach ($orders as $order): ?>
 									<?php
          $orderId = (int) $order["id"];
@@ -312,12 +332,11 @@ $statusLabels = [
 										</td>
 										<td><?= htmlspecialchars($order["room_name"] ?? "N/A") ?></td>
 										<td><?= number_format((float) $order["total_price"], 2) ?></td>
+										<td class="date"><p><?= date("M d, Y H:i", strtotime($order["created_at"])) ?></p></td>
 										<td>
-											<div class="d-flex align-items-center gap-2 flex-wrap">
-												<span class="badge bg-<?= $statusMeta["class"] ?>"><?= $statusMeta[
-  "label"
-] ?></span>
-												<form method="POST" action="/admin/orders/status" class="d-flex align-items-center gap-2">
+											<div class="form-orders-container d-flex align-items-center gap-2 flex-wrap">
+												<span class="badge bg-<?= $statusMeta["class"] ?>"><?= $statusMeta["label"] ?></span>
+										<form method="POST" action="/admin/orders/status" class="d-flex align-items-center gap-2 form-orders">
 													<input type="hidden" name="order_id" value="<?= $orderId ?>">
 													<?php if ($fromDate !== ""): ?>
 														<input type="hidden" name="from" value="<?= htmlspecialchars($fromDate) ?>">
@@ -327,21 +346,20 @@ $statusLabels = [
 													<?php endif; ?>
 													<select name="status" class="form-select form-select-sm">
 														<option value="processing" <?= $status === "processing"
-                ? "selected"
-                : "" ?>>Processing</option>
+																? "selected"
+																: "" ?>>Processing</option>
 														<option value="out_for_delivery" <?= $status === "out_for_delivery"
-                ? "selected"
-                : "" ?>>Out For Delivery</option>
+																? "selected"
+																: "" ?>>Out For Delivery</option>
 														<option value="done" <?= $status === "done" ? "selected" : "" ?>>Done</option>
 														<option value="cancelled" <?= $status === "cancelled"
-                ? "selected"
-                : "" ?>>Cancelled</option>
+															? "selected"
+															: "" ?>>Cancelled</option>
 													</select>
 													<button type="submit" class="btn btn-sm btn-update">Update</button>
 												</form>
 											</div>
 										</td>
-										<td><?= date("M d, Y H:i", strtotime($order["created_at"])) ?></td>
 										<td>
 <button class="btn btn-sm btn-view" type="button" data-bs-toggle="collapse" data-bs-target="#<?= $detailsId ?>">
 												View Items

@@ -74,7 +74,17 @@
     font-weight: 500;
     margin: 0 10px;
 }
-
+.navbar-brand img {
+      width: 80px !important;
+    height: 80px !important;
+    transition:all 0.4s;
+    border-radius:50%;
+    border:2px solid #6f4e37 !important;
+}
+.navbar-brand img:hover{
+  transform:scale3d(1.3,1.3,1.3) rotate(9deg);
+  border-color:#ddd !important;
+}
 </style>
 
 

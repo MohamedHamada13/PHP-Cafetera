@@ -2,7 +2,7 @@
 class Database
 {
     private $host = "127.0.0.1";
-    private $db = "cafeteria";
+    private $db = "cafeteria_db";
     private $user = "root";
     private $pass = "";
     private $port = "3306";
